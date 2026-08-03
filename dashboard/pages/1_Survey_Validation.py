@@ -165,8 +165,8 @@ with right:
         text="People",
         labels={"Outcome": "Task result", "People": "Number of people"},
     )
-    labeled_bar(fig2, "d")
     style_fig(fig2, "Number of people", "Task result")
+    labeled_bar(fig2, "d")
     fig2.update_layout(showlegend=False)
     st.plotly_chart(fig2, use_container_width=True)
 
@@ -191,8 +191,8 @@ with s1:
         text="Average score",
         labels={"device_type": "Device", "Average score": "Average score", "Metric": "UX measure"},
     )
-    labeled_bar(fig, ".1f")
     style_fig(fig, "Average score", "Device", height=420)
+    labeled_bar(fig, ".1f")
     st.plotly_chart(fig, use_container_width=True)
 with s2:
     exp = (
@@ -211,8 +211,8 @@ with s2:
         text="Average score",
         labels={"experience_level": "Experience level", "Average score": "Average score", "Metric": "UX measure"},
     )
-    labeled_bar(fig, ".1f")
     style_fig(fig, "Average score", "Experience level", height=420)
+    labeled_bar(fig, ".1f")
     st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("### Method and model check")
