@@ -11,9 +11,8 @@ from scipy import stats
 _DASHBOARD_DIR = Path(__file__).resolve().parents[1]
 if str(_DASHBOARD_DIR) not in sys.path:
     sys.path.insert(0, str(_DASHBOARD_DIR))
-from ui import decision_banner, load_csv, page_setup, render_sidebar_about, section_caption  # noqa: E402
+from ui import decision_banner, load_csv, render_sidebar_about, section_caption  # noqa: E402
 
-page_setup("Usability Validation")
 render_sidebar_about()
 
 df = load_csv("usability_testing_analysis_ready.csv")

@@ -14,12 +14,10 @@ if str(_DASHBOARD_DIR) not in sys.path:
 from ui import (  # noqa: E402
     decision_banner,
     load_csv,
-    page_setup,
     render_sidebar_about,
     section_caption,
 )
 
-page_setup("Survey Validation")
 render_sidebar_about()
 
 METRIC_LABELS = {
