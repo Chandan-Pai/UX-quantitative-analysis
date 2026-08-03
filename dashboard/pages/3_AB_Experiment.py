@@ -12,7 +12,16 @@ from scipy import stats
 _DASHBOARD_DIR = Path(__file__).resolve().parents[1]
 if str(_DASHBOARD_DIR) not in sys.path:
     sys.path.insert(0, str(_DASHBOARD_DIR))
-from ui import decision_banner, load_csv, render_sidebar_about, section_caption  # noqa: E402
+from ui import (  # noqa: E402
+    decision_banner,
+    filter_bar,
+    labeled_bar,
+    load_csv,
+    multiselect_all,
+    render_sidebar_about,
+    section_caption,
+    style_fig,
+)
 
 render_sidebar_about()
 
@@ -21,12 +30,21 @@ df = load_csv("ab_testing_analysis_ready.csv")
 st.title("A/B experiment validation")
 st.caption("Variant comparison · conversion · engagement · experience quality proxies")
 
-with st.sidebar:
-    st.header("Filters")
-    devices = sorted(df["device_type"].dropna().unique().tolist())
-    countries = sorted(df["country"].dropna().unique().tolist())
-    selected_devices = st.multiselect("Device", devices, default=devices)
-    selected_countries = st.multiselect("Country", countries, default=countries)
+with st.container(border=True):
+    filter_bar()
+    f1, f2 = st.columns(2)
+    with f1:
+        selected_devices = multiselect_all(
+            "Device type",
+            sorted(df["device_type"].dropna().unique().tolist()),
+            key="ab_devices",
+        )
+    with f2:
+        selected_countries = multiselect_all(
+            "Country",
+            sorted(df["country"].dropna().unique().tolist()),
+            key="ab_countries",
+        )
 
 filtered = df[df["device_type"].isin(selected_devices) & df["country"].isin(selected_countries)]
 if filtered.empty:
@@ -47,7 +65,6 @@ summary = (
     .sort_values("variant")
 )
 
-# pairwise A vs B if present
 variants = summary["variant"].tolist()
 headline = "Compare conversion and experience proxies before declaring a winner."
 bullets = [
@@ -60,7 +77,6 @@ severity = "Medium"
 if set(["A", "B"]).issubset(set(filtered["variant"].unique())):
     a = filtered.loc[filtered["variant"] == "A", "conversion"]
     b = filtered.loc[filtered["variant"] == "B", "conversion"]
-    # proportions z-test style via ttest on binary as quick educational check
     _, p_value = stats.ttest_ind(a, b, equal_var=False, nan_policy="omit")
     rate_a = float(a.mean())
     rate_b = float(b.mean())
@@ -91,14 +107,18 @@ if set(["A", "B"]).issubset(set(filtered["variant"].unique())):
 
 decision_banner(headline, bullets, severity=severity)
 
+st.markdown("### Snapshot (filtered sample)")
 k1, k2, k3, k4 = st.columns(4)
 overall_conv = filtered["conversion"].mean() * 100
-k1.metric("Users (filtered)", f"{len(filtered):,}")
-k2.metric("Overall conversion", f"{overall_conv:.1f}%")
-k3.metric("Variants", ", ".join(variants))
-k4.metric("Avg bounce %", f"{filtered['bounce_rate_pct'].mean():.1f}")
+k1.metric("Users in view", f"{len(filtered):,}")
+k2.metric("Overall conversion", f"{overall_conv:.1f}%", help="% of users who converted")
+k3.metric("Variants in data", ", ".join(str(v) for v in variants))
+k4.metric("Avg bounce rate", f"{filtered['bounce_rate_pct'].mean():.1f}%", help="Higher bounce usually means weaker engagement")
 
 st.markdown("### Variant scorecard")
+section_caption(
+    "Conversion % = share who converted. Bounce % = experience/quality guard. Load time = performance proxy."
+)
 show = summary.copy()
 show["conversion_rate"] = (show["conversion_rate"] * 100).round(2)
 show = show.round(
@@ -110,56 +130,74 @@ show = show.round(
         "avg_bounce": 1,
     }
 )
+show = show.rename(
+    columns={
+        "variant": "Variant",
+        "users": "Users",
+        "conversion_rate": "Conversion %",
+        "avg_clicks": "Avg clicks",
+        "avg_load_ms": "Avg page load (ms)",
+        "avg_session_s": "Avg session (sec)",
+        "avg_revenue": "Avg revenue (USD)",
+        "avg_bounce": "Avg bounce %",
+    }
+)
 st.dataframe(show, use_container_width=True, hide_index=True)
-section_caption("Conversion is primary. Bounce and load time are experience / quality guards.")
 
 left, right = st.columns(2)
 with left:
-    st.markdown("#### Conversion by variant")
+    st.markdown("#### Conversion rate by variant")
     fig = px.bar(
         show,
-        x="variant",
-        y="conversion_rate",
-        text="conversion_rate",
-        labels={"variant": "Variant", "conversion_rate": "Conversion %"},
+        x="Variant",
+        y="Conversion %",
+        text="Conversion %",
+        labels={"Variant": "Experiment variant", "Conversion %": "Conversion rate (%)"},
     )
-    fig.update_layout(height=380, margin=dict(t=30))
+    labeled_bar(fig, ".2f")
+    style_fig(fig, "Conversion rate (%)", "Experiment variant", height=400)
     st.plotly_chart(fig, use_container_width=True)
+    section_caption("Higher bar = more users completed the conversion goal.")
 with right:
-    st.markdown("#### Bounce rate by variant")
+    st.markdown("#### Bounce rate distribution by variant")
     fig = px.box(
         filtered,
         x="variant",
         y="bounce_rate_pct",
         color="variant",
-        labels={"variant": "Variant", "bounce_rate_pct": "Bounce rate %"},
+        labels={"variant": "Experiment variant", "bounce_rate_pct": "Bounce rate (%)"},
     )
-    fig.update_layout(showlegend=False, height=380, margin=dict(t=30))
+    style_fig(fig, "Bounce rate (%)", "Experiment variant", height=400)
+    fig.update_layout(showlegend=False)
     st.plotly_chart(fig, use_container_width=True)
+    section_caption("If the “winning” variant also bounces more, dig before shipping.")
 
-st.markdown("### Device segments (conversion)")
+st.markdown("### Device segments — conversion %")
 seg = (
     filtered.groupby(["variant", "device_type"], as_index=False)["conversion"]
     .mean()
-    .assign(conversion_pct=lambda d: d["conversion"] * 100)
+    .assign(**{"Conversion %": lambda d: (d["conversion"] * 100).round(2)})
 )
 fig = px.bar(
     seg,
     x="device_type",
-    y="conversion_pct",
+    y="Conversion %",
     color="variant",
     barmode="group",
-    labels={"device_type": "Device", "conversion_pct": "Conversion %"},
+    text="Conversion %",
+    labels={"device_type": "Device", "Conversion %": "Conversion rate (%)", "variant": "Variant"},
 )
-fig.update_layout(height=380, margin=dict(t=30))
+labeled_bar(fig, ".2f")
+style_fig(fig, "Conversion rate (%)", "Device", height=420)
 st.plotly_chart(fig, use_container_width=True)
+section_caption("Grouped bars: compare Variant A vs B inside each device.")
 
 st.markdown("### Method")
 st.markdown(
     """
 **Study type:** A/B experiment log (variant, conversion, clicks, load time, session, revenue, bounce).  
-**Pipeline:** `src/clean_ab_testing.py` → `data/processed/ab_testing_analysis_ready.csv`.  
-**Stats note:** significance here is an educational check on conversion rates, not a full sequential experiment design.  
+**Pipeline:** `src/clean_ab_testing.py` → this page.  
+**Stats note:** significance check is educational, not a full sequential experiment design.  
 **Honesty:** synthetic educational traffic (Rafiei / PUX).
 """
 )
