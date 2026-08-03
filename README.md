@@ -1,8 +1,10 @@
-# UX Quant Analysis
+# UX Quant Analysis — Validation Suite
 
-Quantitative UX research portfolio: survey cleaning, descriptive analysis, task-success modeling, and a Streamlit dashboard.
+Interactive **Quant UX Validation Suite** (Streamlit): survey, usability testing, and A/B experiment readouts.
 
-> **Data credit (required):** Survey data from **Mohsen Rafiei, Ph.D.**, *UX Datasets Collection* (2025), **Perceptual User Experience Lab (PUX Lab)**.  
+**Live app:** https://ux-quantitative-analysis-f7wxsl89jopdxvcaycsukx.streamlit.app/
+
+> **Data credit (required):** Survey / usability / A/B data from **Mohsen Rafiei, Ph.D.**, *UX Datasets Collection* (2025), **Perceptual User Experience Lab (PUX Lab)**.  
 > Source: https://github.com/mohsen-rafiei/UX_datasets  
 > License: Educational Dataset License (see [`DATA_LICENSE.md`](DATA_LICENSE.md)).  
 > **These are synthetically generated educational datasets**, not real product telemetry. Results are for methods practice and portfolio demonstration only. Do **not** treat findings as claims about real products or systems.
@@ -16,20 +18,14 @@ Rafiei, M. (2025). UX Datasets Collection: Multi-method UX research datasets for
 
 | Piece | Purpose |
 |-------|---------|
-| `src/clean_survey_questionnaire.py` | Reproducible cleaning → analysis-ready CSV |
-| `notebooks/01_survey_questionnaire_clean_and_model.ipynb` | Clean → preprocess → logistic model → evaluation |
-| `dashboard/app.py` | Streamlit readout for product partners |
-| `data/raw/` | Educational survey CSV (attributed) |
+| `dashboard/app.py` | Suite home (decision-oriented hub) |
+| `dashboard/pages/` | Survey · Usability · A/B validation pages |
+| `src/clean_*.py` | Reproducible cleaning → analysis-ready CSVs |
+| `notebooks/` | Survey clean + logistic model notebook |
+| `data/raw/` | Educational CSVs (attributed) |
 | `data/processed/` | Cleaned outputs + model metrics |
 
-## Key results (survey / task success model)
-
-On the educational analysis-ready sample (attention-check passed):
-
-- Logistic regression holdout metrics (see `data/processed/survey_task_success_metrics.csv`): accuracy ≈ **0.93**, ROC-AUC ≈ **0.96**
-- Product-facing takeaway: pair task success with SUS / trust / frustration; completion alone hides friction
-
-Full write-up: [`reports/survey_exec_summary.md`](reports/survey_exec_summary.md)
+Each Streamlit page follows: **decision → KPIs → where it breaks → segments → method**.
 
 ## Setup
 
@@ -39,41 +35,34 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run cleaning
+## Refresh processed data
 
 ```bash
 python src/clean_survey_questionnaire.py
+python src/clean_usability_testing.py
+python src/clean_ab_testing.py
 ```
 
-## Run notebook
-
-```bash
-jupyter notebook notebooks/01_survey_questionnaire_clean_and_model.ipynb
-```
-
-## Run dashboard
+## Run locally
 
 ```bash
 streamlit run dashboard/app.py
 ```
 
-## Project layout
+Open **http://localhost:8501**
 
-```
-data/raw/          # attributed educational CSV
-data/processed/    # cleaned CSVs, metrics, model artifact
-notebooks/         # analysis notebooks
-src/               # reusable cleaning script
-dashboard/         # Streamlit app
-reports/           # short exec summaries
-```
+## Streamlit Community Cloud
 
-## Attribution and honesty
-
-- **Dataset owner:** **Mohsen Rafiei, Ph.D.** (PUX Lab) — attribution required for any use/redistribution of the educational data.
-- Analysis, cleaning code, modeling, and dashboard in this repo: **Chandan Umesh Pai**.
-- Not for commercial product claims without permission from the dataset creator (`Admin@puxlab.com` per their license).
+- Repo: `Chandan-Pai/UX-quantitative-analysis`
+- Main file: `dashboard/app.py`
+- Pushes to `main` redeploy the live app
 
 ## Roadmap
 
-See [`STUDY_ROADMAP.md`](STUDY_ROADMAP.md) for usability, A/B, and feature-adoption follow-ons (same educational collection, same attribution rules).
+See [`STUDY_ROADMAP.md`](STUDY_ROADMAP.md). Next datasets (same attribution rules): feature adoption, funnel/retention, system UX metrics. Recommender / ML pipelines stay in a **separate** repo.
+
+## Attribution and honesty
+
+- **Dataset owner:** **Mohsen Rafiei, Ph.D.** (PUX Lab)
+- Analysis, cleaning, dashboard: **Chandan Umesh Pai**
+- Not for commercial product claims without permission from the dataset creator
