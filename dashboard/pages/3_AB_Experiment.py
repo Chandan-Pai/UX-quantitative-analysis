@@ -154,8 +154,8 @@ with left:
         text="Conversion %",
         labels={"Variant": "Experiment variant", "Conversion %": "Conversion rate (%)"},
     )
-    labeled_bar(fig, ".2f")
     style_fig(fig, "Conversion rate (%)", "Experiment variant", height=400)
+    labeled_bar(fig, ".2f")
     st.plotly_chart(fig, use_container_width=True)
     section_caption("Higher bar = more users completed the conversion goal.")
 with right:
