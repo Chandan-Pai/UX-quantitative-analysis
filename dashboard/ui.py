@@ -58,28 +58,63 @@ def section_caption(text: str) -> None:
 
 def filter_bar(title: str = "Filters (applies to every chart below)") -> None:
     st.markdown(f"#### {title}")
-    st.caption("Add or remove values to update KPIs and graphs. Leave all selected to see the full sample.")
+    st.caption(
+        "Add or remove values to update KPIs and graphs. "
+        "Clearing every option resets to the full sample so charts do not go blank."
+    )
 
 
-def style_fig(fig, y_title: str, x_title: str, height: int = 400):
+def style_fig(fig, y_title: str, x_title: str, height: int = 420):
     fig.update_layout(
         height=height,
-        margin=dict(t=40, b=60, l=60, r=20),
+        margin=dict(t=80, b=70, l=70, r=30),
         xaxis_title=x_title,
         yaxis_title=y_title,
         legend_title_text="",
         font=dict(size=13),
+        autosize=True,
     )
-    fig.update_xaxes(title_font=dict(size=13), tickfont=dict(size=12))
-    fig.update_yaxes(title_font=dict(size=13), tickfont=dict(size=12))
+    fig.update_xaxes(title_font=dict(size=13), tickfont=dict(size=12), automargin=True)
+    fig.update_yaxes(title_font=dict(size=13), tickfont=dict(size=12), automargin=True, rangemode="tozero")
     return fig
 
 
 def labeled_bar(fig, fmt: str = ".1f"):
-    fig.update_traces(texttemplate="%{text:" + fmt + "}", textposition="outside", cliponaxis=False)
+    """Put value labels on bars and pad the y-axis so tops are not clipped."""
+    fig.update_traces(
+        texttemplate="%{text:" + fmt + "}",
+        textposition="outside",
+        cliponaxis=False,
+        textfont_size=12,
+    )
+    ymax = 0.0
+    for trace in fig.data:
+        raw = getattr(trace, "text", None)
+        if raw is None:
+            ys = getattr(trace, "y", None) or []
+            for value in ys:
+                try:
+                    ymax = max(ymax, float(value))
+                except (TypeError, ValueError):
+                    pass
+            continue
+        values = raw if isinstance(raw, (list, tuple)) else [raw]
+        for value in values:
+            try:
+                ymax = max(ymax, float(value))
+            except (TypeError, ValueError):
+                pass
+    if ymax > 0:
+        fig.update_yaxes(range=[0, ymax * 1.22])
+    fig.update_layout(margin=dict(t=90, b=70, l=70, r=30))
     return fig
 
 
 def multiselect_all(label: str, options: Iterable, key: str) -> list:
+    """Multiselect that cannot stay empty (avoids blank charts)."""
     options = list(options)
-    return st.multiselect(label, options, default=options, key=key)
+    selected = st.multiselect(label, options, default=options, key=key)
+    if not selected:
+        st.warning(f"No {label.lower()} selected — showing the full sample so charts stay visible.")
+        return options
+    return selected

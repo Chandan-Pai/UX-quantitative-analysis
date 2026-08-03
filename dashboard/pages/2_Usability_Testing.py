@@ -123,8 +123,10 @@ with left:
         text="Avg errors",
         labels={"Task": "Task name", "Avg errors": "Average errors per session"},
     )
-    labeled_bar(fig, ".2f")
     style_fig(fig, "Average errors per session", "Task name", height=420)
+
+    labeled_bar(fig, ".2f")
+
     fig.update_layout(xaxis_tickangle=-20)
     st.plotly_chart(fig, use_container_width=True)
 with right:

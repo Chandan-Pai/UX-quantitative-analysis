@@ -187,8 +187,8 @@ fig = px.bar(
     text="Conversion %",
     labels={"device_type": "Device", "Conversion %": "Conversion rate (%)", "variant": "Variant"},
 )
-labeled_bar(fig, ".2f")
 style_fig(fig, "Conversion rate (%)", "Device", height=420)
+labeled_bar(fig, ".2f")
 st.plotly_chart(fig, use_container_width=True)
 section_caption("Grouped bars: compare Variant A vs B inside each device.")
 
