@@ -9,7 +9,9 @@ import plotly.express as px
 import streamlit as st
 from scipy import stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_DASHBOARD_DIR = Path(__file__).resolve().parents[1]
+if str(_DASHBOARD_DIR) not in sys.path:
+    sys.path.insert(0, str(_DASHBOARD_DIR))
 from ui import decision_banner, load_csv, page_setup, render_sidebar_about, section_caption  # noqa: E402
 
 page_setup("A/B Experiment Validation")

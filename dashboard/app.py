@@ -14,6 +14,11 @@ st.caption(
 )
 render_attribution()
 
+st.success(
+    "**Open a study from the left sidebar:** "
+    "Survey Validation · Usability Testing · A/B Experiment"
+)
+
 st.markdown("### What this suite is for")
 st.markdown(
     """
@@ -32,15 +37,15 @@ c1, c2, c3 = st.columns(3)
 with c1:
     st.markdown("#### Survey")
     st.write("Post-task questionnaire + task success modeling.")
-    st.page_link("pages/1_Survey_Validation.py", label="Open survey validation", icon="📋")
+    st.caption("Sidebar → Survey Validation")
 with c2:
     st.markdown("#### Usability")
     st.write("Moderated-style task metrics and friction signals.")
-    st.page_link("pages/2_Usability_Testing.py", label="Open usability validation", icon="🧪")
+    st.caption("Sidebar → Usability Testing")
 with c3:
     st.markdown("#### A/B test")
     st.write("Variant comparison for conversion and session quality.")
-    st.page_link("pages/3_AB_Experiment.py", label="Open A/B validation", icon="⚖️")
+    st.caption("Sidebar → A/B Experiment")
 
 st.markdown("### Pipeline (what runs behind the scenes)")
 st.markdown(
